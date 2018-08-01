@@ -3,12 +3,12 @@ from tensorflow.contrib import rnn
 import data_handler_lstm as data
 import numpy as np
 
-hm_epochs = 100
+hm_epochs = 10
 n_classes = 6
 batch_size = 28
 chunk_size = 561
 n_chunks = 47
-rnn_size = 128
+rnn_size = 256
 max_len = 47
 
 inputs, labels = data.prepare_data(data.content, data.labels, max_len)
@@ -30,7 +30,7 @@ def recurrent_neural_network(x):
     lstm_cell = rnn.BasicLSTMCell(rnn_size)
     outputs, states = rnn.static_rnn(lstm_cell, x, dtype=tf.float32)
 
-    output = tf.matmul(outputs[-1], layer['weights']) + layer['biases']
+    output = tf.add(tf.matmul(outputs[-1], layer['weights']), layer['biases'])
 
     return output
 
@@ -50,16 +50,14 @@ def train_neural_network(x):
             while i < len(inputs):
                 epoch_x = np.array(inputs[i:i+batch_size])
                 epoch_y = np.array(labels[i:i+batch_size])
+                epoch_x = epoch_x.reshape((batch_size, n_chunks, chunk_size))
                 _, c = sess.run([optimizer, cost],
                                 feed_dict={x: epoch_x, y: epoch_y})
                 epoch_loss += c
                 i += batch_size
             print('Epoch', epoch, 'completed out of',
                   hm_epochs, 'loss:', epoch_loss)
-
         correct = tf.equal(tf.argmax(prediction, 1), tf.argmax(y, 1))
-        print(np.array(x).shape)
-        print(np.array(test_inputs).shape)
         accuracy = tf.reduce_mean(tf.cast(correct, 'float'))
         print('Accuracy:', accuracy.eval({x: np.array(test_inputs),
               y: np.array(test_labels)}))
