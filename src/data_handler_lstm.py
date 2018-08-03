@@ -53,7 +53,9 @@ def prepare_data(data, labels, length):
     current_label = labels[0][0]
     pos = 0
     prepared_labels = []
-    prepared_labels.append(current_label)
+    aux = np.zeros(6)
+    aux[current_label - 1] = 1
+    prepared_labels.append(list(aux))
     for i in range(len(data)):
         if(current_label == labels[i][0]):
             prepared_data[pos].append(data[i])
@@ -63,11 +65,13 @@ def prepare_data(data, labels, length):
             while(len(prepared_data[pos]) < length):
                 prepared_data[pos].insert(0, list(np.zeros(561)))
             prepared_data.append([])
-            prepared_labels.append(current_label)
+            aux = np.zeros(6)
+            aux[current_label - 1] = 1
+            prepared_labels.append(list(aux))
             pos += 1
     while(len(prepared_data[pos]) < length):
         prepared_data[pos].insert(0, list(np.zeros(561)))
-    aux = list(zip(prepared_data, labels))
+    aux = list(zip(prepared_data, prepared_labels))
     np.random.shuffle(aux)
     prepared_data[:], prepared_labels[:] = zip(*aux)
     return prepared_data, prepared_labels
